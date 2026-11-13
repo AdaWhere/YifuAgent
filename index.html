@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="根据天气和已有衣橱，快速生成一套带解释的儿童穿衣组合。" />
+    <title>暖芽｜儿童穿衣助手</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./app.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="#" aria-label="暖芽首页">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" role="img">
+              <path d="M16 27V14" />
+              <path d="M16 18C9 18 6 14 6 7c7 0 10 4 10 11Z" />
+              <path d="M16 14c0-6 3-9 10-9 0 6-3 9-10 9Z" />
+            </svg>
+          </span>
+          <span>暖芽</span>
+        </a>
+        <span class="privacy-badge">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V7a5 5 0 0 1 10 0v3M5 10h14v11H5z" /></svg>
+          数据仅保存在本机
+        </span>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="hero" aria-labelledby="hero-title">
+        <p class="eyebrow">儿童穿衣建议 Agent</p>
+        <h1 id="hero-title">今天穿什么，<span>30 秒有答案。</span></h1>
+        <p class="hero-description">把天气、孩子的冷热偏好和已有衣服放在一起，生成一套真正穿得到的组合，并告诉你为什么。</p>
+        <ol class="hero-steps" aria-label="使用步骤">
+          <li><span>1</span>保存档案与天气</li>
+          <li><span>2</span>录入已有衣物</li>
+          <li><span>3</span>生成今日建议</li>
+        </ol>
+      </section>
+
+      <div id="storageNotice" class="notice notice-error" role="status" hidden></div>
+
+      <section class="setup-grid" aria-label="基础信息">
+        <article class="card">
+          <div class="card-heading">
+            <div>
+              <p class="section-kicker">01 · 基础信息</p>
+              <h2>孩子的情况</h2>
+            </div>
+            <span class="soft-tag">只需填写一次</span>
+          </div>
+          <form id="profileForm" novalidate>
+            <div class="field">
+              <label for="childName">孩子称呼 <span class="optional">选填</span></label>
+              <input id="childName" name="childName" type="text" maxlength="20" placeholder="例如：小芽" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label for="age">年龄 <span class="required">必填</span></label>
+              <div class="input-group">
+                <input id="age" name="age" type="number" min="0" step="1" placeholder="2" required />
+                <select id="ageUnit" name="ageUnit" aria-label="年龄单位">
+                  <option value="years">岁</option>
+                  <option value="months">个月</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="field">
+                <label for="preference">冷热偏好</label>
+                <select id="preference" name="preference" required>
+                  <option value="neutral">一般</option>
+                  <option value="cold">比较怕冷</option>
+                  <option value="hot">比较怕热</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="scenario">当天场景</label>
+                <select id="scenario" name="scenario" required>
+                  <option value="outdoor">日常外出</option>
+                  <option value="mixed">室内外往返</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="button button-secondary" type="submit">保存档案</button>
+              <span id="profileStatus" class="form-status" role="status"></span>
+            </div>
+          </form>
+        </article>
+
+        <article class="card">
+          <div class="card-heading">
+            <div>
+              <p class="section-kicker">01 · 基础信息</p>
+              <h2>今天的天气</h2>
+            </div>
+            <span class="soft-tag">手动录入</span>
+          </div>
+          <form id="weatherForm" novalidate>
+            <div class="form-row form-row-three">
+              <div class="field">
+                <label for="currentTemp">当前温度</label>
+                <div class="unit-input"><input id="currentTemp" type="number" step="1" placeholder="18" required /><span>°C</span></div>
+              </div>
+              <div class="field">
+                <label for="minTemp">当日最低</label>
+                <div class="unit-input"><input id="minTemp" type="number" step="1" placeholder="12" required /><span>°C</span></div>
+              </div>
+              <div class="field">
+                <label for="maxTemp">当日最高</label>
+                <div class="unit-input"><input id="maxTemp" type="number" step="1" placeholder="22" required /><span>°C</span></div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="field">
+                <label for="precipitation">降水情况</label>
+                <select id="precipitation" required>
+                  <option value="none">无降水</option>
+                  <option value="rain">有雨</option>
+                  <option value="snow">有雪</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="wind">风力情况</label>
+                <select id="wind" required>
+                  <option value="light">较小</option>
+                  <option value="moderate">适中</option>
+                  <option value="strong">较强</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="button button-secondary" type="submit">保存天气</button>
+              <span id="weatherStatus" class="form-status" role="status"></span>
+            </div>
+          </form>
+        </article>
+      </section>
+
+      <section class="card wardrobe-card" aria-labelledby="wardrobe-title">
+        <div class="card-heading">
+          <div>
+            <p class="section-kicker">02 · 已有衣橱</p>
+            <h2 id="wardrobe-title">录入能穿到的衣服</h2>
+          </div>
+          <span id="wardrobeCount" class="soft-tag">0 件</span>
+        </div>
+        <form id="wardrobeForm" class="wardrobe-form" novalidate>
+          <input id="wardrobeId" type="hidden" />
+          <div class="field wardrobe-name-field">
+            <label for="itemName">衣物名称</label>
+            <input id="itemName" type="text" maxlength="30" placeholder="例如：米色薄卫衣" required />
+          </div>
+          <div class="field">
+            <label for="itemCategory">类别</label>
+            <select id="itemCategory" required>
+              <option value="top">上装</option>
+              <option value="bottom">下装</option>
+              <option value="base">内搭</option>
+              <option value="onepiece">连体衣</option>
+              <option value="outerwear">外套</option>
+              <option value="rainwear">雨具</option>
+              <option value="socks">鞋袜</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="itemWarmth">保暖等级</label>
+            <select id="itemWarmth" required>
+              <option value="1">薄款</option>
+              <option value="2">适中</option>
+              <option value="3">厚款</option>
+            </select>
+          </div>
+          <div class="checkbox-field">
+            <label><input id="itemWaterproof" type="checkbox" /> 防雨</label>
+            <label><input id="itemAvailable" type="checkbox" checked /> 当前可用</label>
+          </div>
+          <div class="wardrobe-form-actions">
+            <button id="wardrobeSubmit" class="button button-secondary" type="submit">添加衣物</button>
+            <button id="cancelEdit" class="button button-text" type="button" hidden>取消编辑</button>
+          </div>
+          <span id="wardrobeStatus" class="form-status" role="status"></span>
+        </form>
+        <div id="emptyWardrobe" class="empty-state">
+          <span class="empty-state-icon" aria-hidden="true">
+            <svg viewBox="0 0 32 32"><path d="M11 7 5 10l2 6 3-1v11h12V15l3 1 2-6-6-3c-1 3-9 3-10 0Z" /></svg>
+          </span>
+          <p>衣橱还是空的</p>
+          <span>先录入今天可能穿到的衣物，不需要拍照。</span>
+        </div>
+        <ul id="wardrobeList" class="wardrobe-list" aria-label="衣物列表"></ul>
+      </section>
+
+      <section class="card generate-card" aria-labelledby="generate-title">
+        <div class="generate-heading">
+          <div>
+            <p class="section-kicker">03 · 今日建议</p>
+            <h2 id="generate-title">准备好后，一键生成</h2>
+            <p>从点击生成到结果完整展示，目标不超过 30 秒。</p>
+          </div>
+          <button id="generateButton" class="button button-primary" type="button">
+            生成穿衣建议
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>
+          </button>
+        </div>
+        <div class="readiness" aria-label="生成准备状态">
+          <span id="profileReady">档案未保存</span>
+          <span id="weatherReady">天气未保存</span>
+          <span id="wardrobeReady">衣橱为空</span>
+        </div>
+        <div id="result" class="result" aria-live="polite">
+          <div class="result-placeholder">
+            <span aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M16 4v4M16 24v4M4 16h4M24 16h4M7.5 7.5l3 3M21.5 21.5l3 3M24.5 7.5l-3 3M10.5 21.5l-3 3" /><circle cx="16" cy="16" r="5" /></svg></span>
+            <p>今天的搭配会出现在这里</p>
+            <span>包含具体衣物、穿着层次和推荐原因。</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="rule-note">
+        <strong>首版规则说明</strong>
+        <p>当前温度分层是用于验证产品流程的初始规则，不是医学或安全标准。年龄段差异、极端天气规则仍需专业审核；请结合孩子的即时状态、室内温度和实际体感调整。</p>
+      </aside>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">暖芽仅提供一般生活参考，不提供医疗诊断，也不推荐任何商品。</div>
+    </footer>
+  </body>
+</html>
